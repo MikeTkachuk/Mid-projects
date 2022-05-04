@@ -44,28 +44,89 @@ mask = cv.inRange(image_hsv, red_low, crack_high) | cv.inRange(image_hsv, crack_
 
 masked = cv.bitwise_and(image_hsv,image_hsv, mask=mask)
 
-#plt.imshow(cv.cvtColor(masked, cv.COLOR_HSV2RGB))
-#plt.show()
+f, axes = plt.subplots(1,1,figsize=(11,11))
+axes.imshow(cv.cvtColor(masked, cv.COLOR_HSV2RGB))
 
 # - image linear transformation showcase
 image = cv.imread('im.jpeg')
 rows,cols,ch = image.shape
 
 pts1 = np.float32([[50,50],[200,50],[50,200], [200,200]])
-pts2 = np.float32([[10,100],[200,50],[100,250], [200,250]])
+pts2 = np.float32([[60,60],[200,70],[50,200], [220,120]])
 M = cv.getAffineTransform(pts1[:-1],pts2[:-1])
 M1 = cv.getPerspectiveTransform(pts1,pts2)
 dst = cv.warpAffine(image,M,(cols,rows))
 dst1 = cv.warpPerspective(image,M1,(cols,rows))
-print(M)
-print(M1)
-plt.subplot(121),plt.imshow(dst),plt.title('Input')
-plt.subplot(122),plt.imshow(dst1),plt.title('Output')
-plt.show()
 
-# - image kernel operations
+f, axes = plt.subplots(1,2,figsize=(11,11))
+f.suptitle('Affine and Perspective transform')
+axes = axes.flatten()
+
+axes[0].imshow(dst), axes[0].scatter(*pts2[:-1].T),axes[0].title.set_text('Affine')
+axes[1].imshow(dst1),axes[1].scatter(*pts2.T), axes[1].title.set_text('Perspective')
+
+
+# - image kernel operations. both blurring and gaussian thresholding use kernels
+# though differently
+
+image = cv.imread('im.jpeg')
+blurred = cv.GaussianBlur(cv.cvtColor(image, cv.COLOR_BGR2GRAY), (5,5), 1)
+_, blurred = cv.threshold(blurred,127,255,cv.THRESH_BINARY)
+# thresholding
+thresholded = cv.adaptiveThreshold(cv.cvtColor(image, cv.COLOR_BGR2GRAY),255,cv.ADAPTIVE_THRESH_GAUSSIAN_C,cv.THRESH_BINARY,5,1)
+f, axes = plt.subplots(2,2,figsize=(11,11))
+axes = axes.flatten()
+f.suptitle('Adaptive thresholding and binary thr. after blur is not the same!')
+
+axes[0].imshow(image),\
+axes[0].title.set_text('Input')
+axes[1].imshow(blurred), axes[1].title.set_text('Output')
+axes[2].imshow(thresholded), axes[2].title.set_text('Output')
+axes[3].remove()
+
+
 # - image morphology algs https://en.wikipedia.org/wiki/Erosion_(morphology)
-# - image derivatives https://towardsdatascience.com/image-derivative-8a07a4118550
+# another use of kernels
+image = cv.imread('im.jpeg')
+kernel = cv.getStructuringElement(cv.MORPH_ELLIPSE, (7,7))
+print('Morphological elliptic kernel:')
+print(kernel)
+eroded = cv.erode(image,kernel)
+dilated = cv.dilate(image, kernel)
+grad = cv.morphologyEx(image, cv.MORPH_GRADIENT,kernel)
+f, axes = plt.subplots(2,2,figsize=(11,11))
+axes = axes.flatten()
+f.suptitle('Morphology')
+
+axes[0].imshow(image),\
+axes[0].title.set_text('Input')
+axes[1].imshow(eroded), axes[1].title.set_text('Erosion')
+axes[2].imshow(dilated), axes[2].title.set_text('Dilation')
+axes[3].imshow(grad), axes[3].title.set_text('Kernel gradient')
+
+
+# - image kernel derivatives https://towardsdatascience.com/image-derivative-8a07a4118550
+# kernels everywhere
+image = cv.imread('im.jpeg')
+sobel1 = cv.Sobel(image,cv.CV_32F,1,1,ksize=5)
+sobel2 = cv.Sobel(sobel1,cv.CV_32F,1,1,ksize=5)
+sobel3 = cv.Sobel(image, cv.CV_32F,2,2,ksize=5)
+laplace = cv.Laplacian(image,cv.CV_32F)
+
+f, axes = plt.subplots(2,2,figsize=(11,11))
+axes = axes.flatten()
+f.suptitle('Image derivatives')
+
+axes[0].imshow(image),\
+axes[0].title.set_text('Input')
+axes[1].imshow(sobel2), axes[1].title.set_text('sobel 2nd consecutive')
+axes[2].imshow(sobel3), axes[2].title.set_text('Sobel 2x2')
+axes[3].imshow(laplace), axes[3].title.set_text('Laplace')
+
+
 # - canny
+
+
 # -
 image = cv.imread('im.jpeg')
+plt.show()
