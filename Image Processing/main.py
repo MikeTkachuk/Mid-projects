@@ -44,7 +44,7 @@ mask = cv.inRange(image_hsv, red_low, crack_high) | cv.inRange(image_hsv, crack_
 
 masked = cv.bitwise_and(image_hsv,image_hsv, mask=mask)
 
-f, axes = plt.subplots(1,1,figsize=(11,11))
+f, axes = plt.subplots(1,1,figsize=(12,7))
 axes.imshow(cv.cvtColor(masked, cv.COLOR_HSV2RGB))
 
 # - image linear transformation showcase
@@ -58,7 +58,7 @@ M1 = cv.getPerspectiveTransform(pts1,pts2)
 dst = cv.warpAffine(image,M,(cols,rows))
 dst1 = cv.warpPerspective(image,M1,(cols,rows))
 
-f, axes = plt.subplots(1,2,figsize=(11,11))
+f, axes = plt.subplots(1,2,figsize=(12,7))
 f.suptitle('Affine and Perspective transform')
 axes = axes.flatten()
 
@@ -74,7 +74,7 @@ blurred = cv.GaussianBlur(cv.cvtColor(image, cv.COLOR_BGR2GRAY), (5,5), 1)
 _, blurred = cv.threshold(blurred,127,255,cv.THRESH_BINARY)
 # thresholding
 thresholded = cv.adaptiveThreshold(cv.cvtColor(image, cv.COLOR_BGR2GRAY),255,cv.ADAPTIVE_THRESH_GAUSSIAN_C,cv.THRESH_BINARY,5,1)
-f, axes = plt.subplots(2,2,figsize=(11,11))
+f, axes = plt.subplots(2,2,figsize=(12,7))
 axes = axes.flatten()
 f.suptitle('Adaptive thresholding and binary thr. after blur is not the same!')
 
@@ -94,7 +94,7 @@ print(kernel)
 eroded = cv.erode(image,kernel)
 dilated = cv.dilate(image, kernel)
 grad = cv.morphologyEx(image, cv.MORPH_GRADIENT,kernel)
-f, axes = plt.subplots(2,2,figsize=(11,11))
+f, axes = plt.subplots(2,2,figsize=(12,7))
 axes = axes.flatten()
 f.suptitle('Morphology')
 
@@ -109,11 +109,11 @@ axes[3].imshow(grad), axes[3].title.set_text('Kernel gradient')
 # kernels everywhere
 image = cv.imread('im.jpeg')
 sobel1 = cv.Sobel(image,cv.CV_32F,1,1,ksize=5)
-sobel2 = cv.Sobel(sobel1,cv.CV_32F,1,1,ksize=5)
-sobel3 = cv.Sobel(image, cv.CV_32F,2,2,ksize=5)
-laplace = cv.Laplacian(image,cv.CV_32F)
+sobel2 = cv.Sobel(sobel1,cv.CV_32F,1,1,ksize=5).astype(np.int32)
+sobel3 = cv.Sobel(image, cv.CV_32F,2,2,ksize=5).astype(np.int32)
+laplace = cv.Laplacian(image,cv.CV_32F).astype(np.int32)
 
-f, axes = plt.subplots(2,2,figsize=(11,11))
+f, axes = plt.subplots(2,2,figsize=(12,7))
 axes = axes.flatten()
 f.suptitle('Image derivatives')
 
@@ -126,7 +126,19 @@ axes[3].imshow(laplace), axes[3].title.set_text('Laplace')
 
 # - canny
 
+image = cv.imread('im.jpeg')
+canny = cv.Canny(image,20,50)
+laplace = cv.Laplacian(image,cv.CV_32F)
+
+f, axes = plt.subplots(2,2,figsize=(12,7))
+axes = axes.flatten()
+f.suptitle('Image derivatives')
+
+axes[0].imshow(image),\
+axes[0].title.set_text('Input')
+axes[1].imshow(canny.astype(np.int32)), axes[1].title.set_text('Canny')
+axes[2].imshow(laplace.astype(np.int32)), axes[2].title.set_text('Laplace')
+axes[3].remove()
 
 # -
-image = cv.imread('im.jpeg')
 plt.show()
