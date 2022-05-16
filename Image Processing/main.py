@@ -132,7 +132,7 @@ laplace = cv.Laplacian(image,cv.CV_32F)
 
 f, axes = plt.subplots(2,2,figsize=(12,7))
 axes = axes.flatten()
-f.suptitle('Image derivatives')
+f.suptitle('Canny')
 
 axes[0].imshow(image),\
 axes[0].title.set_text('Input')
@@ -140,5 +140,47 @@ axes[1].imshow(canny.astype(np.int32)), axes[1].title.set_text('Canny')
 axes[2].imshow(laplace.astype(np.int32)), axes[2].title.set_text('Laplace')
 axes[3].remove()
 
-# -
+# - contours retrieval
+
+image = cv.imread('im.jpeg')
+canny = cv.Canny(image,20,50)
+contours, _ = cv.findContours(canny,cv.RETR_TREE,cv.CHAIN_APPROX_SIMPLE)
+filtered = []
+for i, c in enumerate(contours):
+    if cv.contourArea(c) > 100:
+        filtered.append(c)
+
+f, axes = plt.subplots(1,2,figsize=(12,7))
+axes = axes.flatten()
+f.suptitle('Contours')
+
+axes[0].imshow(canny.astype(np.int32)), axes[0].title.set_text('Canny')
+axes[1].imshow(cv.drawContours(im,filtered,-1,(255,0,0),4)), axes[1].title.set_text('Filtered contours drawn')
+
+# - histograms
+image = cv.imread('im.jpeg')
+f, axes = plt.subplots(1,1,figsize=(12,7))
+
+for ch in range(3):
+    x, y = np.histogram(image[...,ch].flatten(), 200)[::-1]
+    axes.plot(x[:len(y)],y)
+
+# - hough circles detection
+
+image = cv.imread('pexels-photo-302743.jpeg')
+img = cv.cvtColor(image, cv.COLOR_BGR2GRAY)
+circles = cv.HoughCircles(img,cv.HOUGH_GRADIENT,1,60,
+                            param1=50,param2=70,minRadius=100,maxRadius=200)
+circles = np.uint16(np.around(circles))
+for i in circles[0,:]:
+    # draw the outer circle
+    cv.circle(image,(i[0],i[1]),i[2],(0,255,0),2)
+    # draw the center of the circle
+    cv.circle(image,(i[0],i[1]),2,(0,0,255),3)
+
+f, axes = plt.subplots(1,1,figsize=(12,7))
+axes.imshow(image)
+
+# - 
+
 plt.show()
